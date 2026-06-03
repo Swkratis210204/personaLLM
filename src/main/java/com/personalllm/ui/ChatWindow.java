@@ -6,6 +6,8 @@ import com.personalllm.model.Message;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +37,27 @@ public class ChatWindow extends JFrame {
         setMinimumSize(new Dimension(520, 400));
         setLocationRelativeTo(null);
         buildUI();
+        loadIcon();
+        bindShortcuts();
         startOllama();
         setVisible(true);
+    }
+
+    // ── Icon & shortcuts ──────────────────────────────────────────────────────
+
+    private void loadIcon() {
+        URL iconUrl = getClass().getClassLoader().getResource("icon.png");
+        if (iconUrl != null) {
+            setIconImage(new ImageIcon(iconUrl).getImage());
+        }
+    }
+
+    private void bindShortcuts() {
+        getRootPane().registerKeyboardAction(
+                e -> clearChat(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
     }
 
     // ── UI construction ───────────────────────────────────────────────────────
@@ -121,6 +142,11 @@ public class ChatWindow extends JFrame {
 
     // ── Ollama startup ────────────────────────────────────────────────────────
 
+    private void showWelcomeMessage() {
+        appendSpeaker("Anastasia", ASSISTANT_COLOR);
+        appendText("Hi! I'm Anastasia. How can I help you today?\n\n", ASSISTANT_COLOR, false);
+    }
+
     private void startOllama() {
         setStatus("Starting Ollama...", false);
         sendButton.setEnabled(false);
@@ -138,6 +164,7 @@ public class ChatWindow extends JFrame {
             }
 
             SwingUtilities.invokeLater(() -> {
+                showWelcomeMessage();
                 sendButton.setEnabled(true);
                 inputField.requestFocusInWindow();
                 setStatus("Ready", false);
@@ -247,6 +274,7 @@ public class ChatWindow extends JFrame {
     private void clearChat() {
         history.clear();
         chatPane.setText("");
+        showWelcomeMessage();
         inputField.requestFocusInWindow();
         setStatus("Ready", false);
     }
