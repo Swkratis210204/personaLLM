@@ -1,88 +1,87 @@
-# PersonalLLM — Project Plan
+# personaLM — Project Plan
 
 ## Goal
-A lightweight Java desktop chat app that runs local LLMs via Ollama.
-No cloud, no API keys, no cost. Runs fully offline after initial model download.
+A lightweight Java desktop chat app running AI locally via Ollama.
+No cloud, no API keys, no cost. Fully offline after initial setup.
+The assistant is named **Anastasia**.
 
 ## Constraints
-- RTX 1650 (4GB VRAM) — limits usable model size (see MODELS.md)
-- Java only — no Node, no Python runtime required to run the app
+- RTX 1650 (4GB VRAM) — single model only: `gemma3:4b`
+- Java only — no Node, no Python runtime required
 - Free forever — no paid APIs, no subscriptions
-- Simple to use — one JAR or launcher, no complex setup for end user
+- Simple to use — one JAR, no complex setup for end users
 
 ---
 
-## v1 — Core Chat (current)
+## v1 — Core Chat ✅ COMPLETE
 
-**Goal:** A working chat app. Basic, solid, shippable.
+- [x] Chat window with user / Anastasia message bubbles
+- [x] Streaming responses (token by token)
+- [x] Fixed model: gemma3:4b hardcoded
+- [x] System prompt field
+- [x] Clear History button + Ctrl+L shortcut
+- [x] Welcome message from Anastasia on launch and after clear
+- [x] Status bar (Ready / thinking... / errors)
+- [x] Hang guard — 60s watchdog, recovers if Ollama freezes
+- [x] Auto-start Ollama on launch
+- [x] App icon
+- [x] Enter to send, cursor stays in input while streaming
 
-- [ ] Chat window with user / assistant message bubbles
-- [ ] Text input + Send button (Enter to send)
-- [ ] Fixed model: gemma3:4b (no selector — keeps it simple, saves disk space)
-- [ ] Streaming responses (text appears token by token)
-- [ ] Clear conversation button
-- [ ] System prompt field (set the assistant's persona / context)
-
-**Out of scope for v1:**
-- Saving conversation history to disk
-- Multiple chat sessions / tabs
-- Image input
-- Auto-installer script
+**Deferred to after v2:** fat JAR build + GitHub Release (want UI polish first)
 
 ---
 
-## v2 — History & Broader Model Support
+## v2 — History + Distribution + UI Polish (next)
 
-**Goal:** Make the app more useful day-to-day. Conversations persist, more models work well.
+**Goal:** Conversations persist, app is ready to ship to friends.
 
-- [ ] Save conversation history to disk (JSON files, one per session)
-- [ ] Load / browse past conversations from a sidebar or menu
+### History
+- [ ] Save each conversation as JSON in a `conversations/` folder
+- [ ] Sidebar listing past conversations (click to reload)
 - [ ] Delete individual conversations
-- [ ] Single model: gemma3:4b across all versions (no multi-model support — disk space concern)
-- [ ] Auto-detect if Ollama is not running and show a clear actionable error
-- [ ] Auto-installer script — installs Java + Ollama + pulls default model in one click
+- [ ] File naming: `{timestamp}_{first_few_words}.json`
+- [ ] No database — plain JSON files only
 
-**Storage approach (planned):**
-- Conversations saved as JSON in a local `conversations/` folder next to the JAR
-- No database — plain files, easy to back up or delete
-- File format: `{timestamp}_{first_few_words_of_chat}.json`
+### Distribution
+- [ ] Build fat JAR (`mvn package` → `personallm.jar`)
+- [ ] Test JAR runs standalone without Maven
+- [ ] GitHub Release with JAR attached
+- [ ] Update README with download link and screenshot
+
+### UI Polish
+- [ ] TBD — user will review current UI and specify what feels off
 
 ---
 
 ## v3 — Image Input (Multimodal)
 
-**Goal:** Send images to models that support vision (e.g. `llava`, `gemma3` multimodal variants).
-
-- [ ] Image attachment button in the chat input area
-- [ ] Drag-and-drop image onto the chat window
+- [ ] Image attach button + drag-and-drop
 - [ ] Preview thumbnail before sending
-- [ ] Send image + text together to the model (Ollama multimodal API)
-- [ ] Graceful fallback — if selected model doesn't support images, show a clear message
+- [ ] Send image + text to model (Ollama multimodal API)
+- [ ] Graceful fallback if model doesn't support vision
+- [ ] PNG / JPG / WEBP only — no video, no audio
 
-**Notes:**
-- Only static images (PNG, JPG, WEBP) — no video, no audio
-- Model must support vision; not all Ollama models do
-- VRAM requirement goes up with image input — will document in MODELS.md
+---
+
+## v4 — Native App
+
+- [ ] Package with `jpackage` → `.exe` installer on Windows
+- [ ] Real app icon in Start Menu, no terminal needed
+- [ ] Auto-update mechanism (TBD)
 
 ---
 
 ## Build Phases
 
-| Phase | Description | Version |
+| Phase | Description | Status |
 |---|---|---|
-| 1 | Docs — planning MDs | v1 |
-| 2 | Scaffold — Maven structure, stubs | v1 ✓ |
-| 3 | Core — OllamaClient, streaming | v1 ✓ |
-| 4 | UI — Swing chat window | v1 |
-| 5 | Polish — model selector, system prompt, shortcuts | v1 |
-| 6 | Package — fat JAR + launcher | v1 |
-| 7 | History — save/load conversations | v2 |
-| 8 | Model support — Llama/Mistral/Phi, model info UI | v2 |
-| 9 | Auto-installer script | v2 |
-| 10 | Image input — multimodal support | v3 |
-
----
-
-## Open Questions (v1)
-- Dark mode by default, or light with a toggle?
-- Installer (jpackage) or just a JAR for v1?
+| 1 | Docs | ✅ |
+| 2 | Scaffold — Maven, stubs | ✅ |
+| 3 | OllamaClient — streaming, hang guard | ✅ |
+| 4 | UI — chat window, Anastasia, status bar | ✅ |
+| 5 | Polish — icon, shortcuts, welcome message | ✅ |
+| 6 | History — save/load/delete conversations | v2 |
+| 7 | Distribution — JAR, GitHub Release | v2 |
+| 8 | UI sharpening | v2 |
+| 9 | Image input — multimodal | v3 |
+| 10 | Native installer — jpackage | v4 |
