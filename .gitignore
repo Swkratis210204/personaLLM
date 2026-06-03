@@ -1,0 +1,62 @@
+# Maven build output
+target/
+
+# IDE files — IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE files — Eclipse
+.classpath
+.project
+.settings/
+
+# IDE files — VS Code
+.vscode/
+
+# IDE files — NetBeans
+nbproject/
+nbactions.xml
+
+# OS artifacts — Windows
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# OS artifacts — macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# OS artifacts — Linux
+*~
+
+# Local run scripts (contain machine-specific paths)
+run.cmd
+run.sh
+
+# Local config (may contain personal paths or settings)
+*.local
+local.properties
+config.local.*
+
+# Environment files (never commit secrets)
+.env
+.env.*
+*.env
+
+# Log files
+*.log
+logs/
+
+# Maven wrapper downloaded distribution (machine-specific, auto-downloaded)
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/MavenWrapperDownloader.java
+
+# Crash dumps and temp files
+hs_err_pid*
+replay_pid*
+*.tmp
+*.temp
