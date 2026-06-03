@@ -1,4 +1,4 @@
-# personaLLM
+# personaLM
 
 A lightweight desktop chat app that runs AI locally on your machine.
 No cloud. No API keys. No subscriptions. Fully offline after setup.

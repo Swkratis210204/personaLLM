@@ -28,7 +28,7 @@ public class ChatWindow extends JFrame {
     private int        thinkingPos = -1;
 
     public ChatWindow() {
-        super("personaLLM");
+        super("personaLM");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(860, 640);
         setMinimumSize(new Dimension(520, 400));

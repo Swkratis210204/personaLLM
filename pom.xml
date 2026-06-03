@@ -7,11 +7,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.personalllm</groupId>
-    <artifactId>personalllm</artifactId>
+    <artifactId>personallm</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>PersonalLLM</name>
+    <name>personaLLM</name>
     <description>A local desktop chat app powered by Ollama. No cloud, no API keys.</description>
 
     <properties>
@@ -45,7 +45,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <finalName>personalllm</finalName>
+                    <finalName>personallm</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
