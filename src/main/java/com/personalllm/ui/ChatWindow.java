@@ -11,12 +11,12 @@ import java.util.List;
 
 public class ChatWindow extends JFrame {
 
-    private static final String MODEL          = "gemma3:4b";
-    private static final Color  USER_COLOR     = new Color(0x1a5276);
+    private static final String MODEL           = "gemma3:4b";
+    private static final Color  USER_COLOR      = new Color(0x1a5276);
     private static final Color  ASSISTANT_COLOR = new Color(0x1e6630);
-    private static final Color  ERROR_COLOR    = new Color(0xc0392b);
-    private static final Color  STATUS_COLOR   = new Color(0x888888);
-    private static final Font   CHAT_FONT      = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+    private static final Color  ERROR_COLOR     = new Color(0xc0392b);
+    private static final Color  STATUS_COLOR    = new Color(0x888888);
+    private static final Font   CHAT_FONT       = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
 
     private final OllamaClient  client  = new OllamaClient();
     private final List<Message> history = new ArrayList<>();
@@ -25,6 +25,7 @@ public class ChatWindow extends JFrame {
     private JTextField inputField;
     private JButton    sendButton;
     private JTextField systemPromptField;
+    private JLabel     statusBar;
     private int        thinkingPos = -1;
 
     public ChatWindow() {
@@ -44,7 +45,7 @@ public class ChatWindow extends JFrame {
         setLayout(new BorderLayout());
         add(buildTopBar(),    BorderLayout.NORTH);
         add(buildChatArea(),  BorderLayout.CENTER);
-        add(buildBottomBar(), BorderLayout.SOUTH);
+        add(buildBottomPanel(), BorderLayout.SOUTH);
     }
 
     private JPanel buildTopBar() {
@@ -79,7 +80,15 @@ public class ChatWindow extends JFrame {
         return scroll;
     }
 
-    private JPanel buildBottomBar() {
+    // Bottom panel = input row + status bar
+    private JPanel buildBottomPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(buildInputRow(), BorderLayout.CENTER);
+        panel.add(buildStatusBar(), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel buildInputRow() {
         JPanel bar = new JPanel(new BorderLayout(8, 0));
         bar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY),
@@ -102,26 +111,36 @@ public class ChatWindow extends JFrame {
         return bar;
     }
 
+    private JLabel buildStatusBar() {
+        statusBar = new JLabel("Starting...");
+        statusBar.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 11));
+        statusBar.setForeground(STATUS_COLOR);
+        statusBar.setBorder(BorderFactory.createEmptyBorder(2, 12, 4, 10));
+        return statusBar;
+    }
+
     // ── Ollama startup ────────────────────────────────────────────────────────
 
     private void startOllama() {
-        appendStatus("Starting Ollama...\n");
+        setStatus("Starting Ollama...", false);
         sendButton.setEnabled(false);
 
         new Thread(() -> {
             if (!client.isRunning()) {
                 boolean started = client.startOllama();
                 if (!started) {
-                    SwingUtilities.invokeLater(() ->
-                        appendStatus("Ollama not found. Please install it — see SETUP.md\n\n"));
+                    SwingUtilities.invokeLater(() -> {
+                        appendStatus("Ollama not found. Please install it — see SETUP.md\n\n");
+                        setStatus("Ollama not found — see SETUP.md", true);
+                    });
                     return;
                 }
             }
 
             SwingUtilities.invokeLater(() -> {
-                chatPane.setText("");
                 sendButton.setEnabled(true);
                 inputField.requestFocusInWindow();
+                setStatus("Ready", false);
             });
         }).start();
     }
@@ -167,11 +186,13 @@ public class ChatWindow extends JFrame {
                     SwingUtilities.invokeLater(() -> {
                         appendText("\n\n", ASSISTANT_COLOR, false);
                         setSending(false);
+                        setStatus("Ready", false);
                     });
                 },
                 error -> SwingUtilities.invokeLater(() -> {
                     appendText(error + "\n\n", ERROR_COLOR, true);
                     setSending(false);
+                    setStatus(error, true);
                 })
         )).start();
     }
@@ -212,8 +233,14 @@ public class ChatWindow extends JFrame {
 
     // ── State helpers ─────────────────────────────────────────────────────────
 
+    private void setStatus(String text, boolean error) {
+        statusBar.setText(text);
+        statusBar.setForeground(error ? ERROR_COLOR : STATUS_COLOR);
+    }
+
     private void setSending(boolean sending) {
         sendButton.setEnabled(!sending);
+        if (sending) setStatus("Anastasia is thinking...", false);
         inputField.requestFocusInWindow();
     }
 
@@ -221,5 +248,6 @@ public class ChatWindow extends JFrame {
         history.clear();
         chatPane.setText("");
         inputField.requestFocusInWindow();
+        setStatus("Ready", false);
     }
 }

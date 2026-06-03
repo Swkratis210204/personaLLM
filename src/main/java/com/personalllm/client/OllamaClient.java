@@ -16,14 +16,16 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 public class OllamaClient {
 
-    private static final String BASE_URL      = "http://localhost:11434";
-    private static final Duration TIMEOUT     = Duration.ofSeconds(5);
-    private static final int STARTUP_WAIT_MS  = 500;
-    private static final int STARTUP_RETRIES  = 10;
+    private static final String BASE_URL        = "http://localhost:11434";
+    private static final Duration TIMEOUT       = Duration.ofSeconds(5);
+    private static final int STARTUP_WAIT_MS    = 500;
+    private static final int STARTUP_RETRIES    = 10;
+    private static final long HANG_TIMEOUT_MS   = 60_000;
 
     // Common install locations for the Ollama executable
     private static final List<String> OLLAMA_PATHS = List.of(
@@ -105,6 +107,23 @@ public class OllamaClient {
                            Consumer<String> onToken,
                            Runnable onDone,
                            Consumer<String> onError) {
+        AtomicLong lastActivity = new AtomicLong(System.currentTimeMillis());
+        Thread callerThread = Thread.currentThread();
+
+        Thread watchdog = new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    Thread.sleep(5_000);
+                    if (System.currentTimeMillis() - lastActivity.get() > HANG_TIMEOUT_MS) {
+                        callerThread.interrupt();
+                        return;
+                    }
+                }
+            } catch (InterruptedException ignored) {}
+        });
+        watchdog.setDaemon(true);
+        watchdog.start();
+
         try {
             String body = buildChatRequest(model, systemPrompt, history);
 
@@ -137,6 +156,7 @@ public class OllamaClient {
                         String token = json.getAsJsonObject("message")
                                 .get("content").getAsString();
                         if (!token.isEmpty()) {
+                            lastActivity.set(System.currentTimeMillis());
                             onToken.accept(token);
                         }
                     }
@@ -145,12 +165,18 @@ public class OllamaClient {
                 }
             }
 
+            watchdog.interrupt();
             onDone.run();
 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            onError.accept("Ollama stopped responding — please try again.");
         } catch (java.net.ConnectException e) {
             onError.accept("Lost connection to Ollama.");
         } catch (Exception e) {
             onError.accept("Error: " + e.getMessage());
+        } finally {
+            watchdog.interrupt();
         }
     }
 
